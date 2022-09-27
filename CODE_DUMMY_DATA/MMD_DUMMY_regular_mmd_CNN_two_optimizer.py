@@ -71,7 +71,7 @@ class Dataset_Dummy_Source_Window(Dataset):
 
     def __init__(self):
 
-        n = 5000 #number of windows
+        n = 500 #number of windows
         window_size = 1000 #window size
 
         #set difficulty of domain adaptation problem
@@ -95,7 +95,7 @@ class Dataset_Dummy_Target_Window(Dataset):
     
     def __init__(self):
 
-        n = 5000 #number of windows
+        n = 500 #number of windows
         window_size = 1000 #window size
 
         frequencies = [1,4,1.9,3.1] #characteristic frequencies [class0_domain0,class1_domain0,class0_domain1,class1_domain1]
@@ -310,7 +310,8 @@ if __name__ == "__main__":
 
     # create csv writer to store data
     f_learning_curve_writer = csv.writer(f_learning_curve)
-    f_learning_curve_writer.writerow(['loss_val', 'mmd_loss_val', 'source_ce_loss_val', 'target_ce_loss_val', 'acc_total_source_val', 'acc_total_target_val', 'loss_train', 'mmd_loss_train', 'source_ce_loss_train', 'target_ce_loss_train', 'acc_total_source_train', 'acc_total_target_train'])
+    #f_learning_curve_writer.writerow(['loss_val', 'mmd_loss_val', 'source_ce_loss_val', 'target_ce_loss_val', 'acc_total_source_val', 'acc_total_target_val', 'loss_train', 'mmd_loss_train', 'source_ce_loss_train', 'target_ce_loss_train', 'acc_total_source_train', 'acc_total_target_train'])
+    f_learning_curve_writer.writerow(['loss_val', 'mmd_loss_val', 'source_ce_loss_val', 'target_ce_loss_val', 'acc_total_source_val', 'acc_total_target_val', 'loss_mmd', 'mmd_loss_mmd', 'source_ce_loss_mmd', 'target_ce_loss_mmd', 'acc_total_source_mmd', 'acc_total_target_mmd', 'loss_ce', 'mmd_loss_ce', 'source_ce_loss_ce', 'target_ce_loss_ce', 'acc_total_source_ce', 'acc_total_target_ce'])
 
 
     #Collect Training Information
@@ -496,7 +497,7 @@ if __name__ == "__main__":
                     model_fc.train(False)
                     
                     with torch.no_grad():
-                        _, mmd_loss, source_ce_loss, target_ce_loss, acc_total_source, acc_total_target, class_0_source_out, class_1_source_out, class_0_target_out, class_1_target_out = forward_mmd(model_cnn, model_fc, data, labels_source, labels_target, criterion, MMD_loss_calculator, MMD_loss_flag[phase], GAMMA)
+                        loss , mmd_loss, source_ce_loss, target_ce_loss, acc_total_source, acc_total_target, class_0_source_out, class_1_source_out, class_0_target_out, class_1_target_out = forward_mmd(model_cnn, model_fc, data, labels_source, labels_target, criterion, MMD_loss_calculator, MMD_loss_flag[phase], GAMMA)
                         
                         #just detatch losses which are solely stored for plots
                         loss_collected += loss
@@ -588,6 +589,8 @@ if __name__ == "__main__":
             
             running_source_ce_loss = source_ce_loss_collected / len(source_loader[phase])
             running_target_ce_loss = target_ce_loss_collected / len(target_loader[phase])
+            
+            running_mmd_loss = mmd_loss_collected / len(source_loader[phase])
             
             # write one csv line for learning curve plot data
             learning_curve_data_collect = learning_curve_data_collect + [running_loss.item(), running_mmd_loss.item(), running_source_ce_loss.item(), running_target_ce_loss.item(), running_acc_source, running_acc_target]
