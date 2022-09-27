@@ -74,14 +74,15 @@ class Dataset_Dummy_Source_Window(Dataset):
 
     def __init__(self):
 
-        n = 5000 #8000
-        frequencies = [1,4,1.9,3.1]#[1,4,1.6,3.4]#[1,4,1.9,3.1]
-        amplitudes = [6,2,5,4]
-        freq_noise = 0.5 #0.3
-        ampl_noise = 4 #2
-        window_size = 1000
+        n = 5000 #number of windows
+        window_size = 1000 #window size
+
+        #set difficulty of domain adaptation problem
+        frequencies = [1,4,1.9,3.1] #characteristic frequencies [class0_domain0,class1_domain0,class0_domain1,class1_domain1]
+        amplitudes = [6,2,5,4] #characteristic amplitude [class0_domain0,class1_domain0,class0_domain1,class1_domain1]
+        freq_noise = 0.5 # noise perturbing the characteristic frequency during each sampling process
+        ampl_noise = 4 # noise perturbing the characteristic amplitude during each sampling process
         self.n_samples, self.x_data, self.y_data, _, _ = create_data_window(n, frequencies, amplitudes, freq_noise, ampl_noise, window_size)
-        
         
                   
     # support indexing such that dataset[i] can be used to get i-th sample
@@ -98,13 +99,15 @@ class Dataset_Dummy_Target_Window(Dataset):
     
     def __init__(self):
 
-        n = 5000 #8000 
-        frequencies = [1,4,1.9,3.1]#[1,4,1.6,3.4]#[1,4,1.9,3.1]
-        amplitudes = [6,2,5,4]
-        freq_noise = 0.5 #0.3
-        ampl_noise = 4 #2
-        window_size = 1000
-        self.n_samples, _, _, self.x_data, self.y_data = create_data_window(n, frequencies, amplitudes, freq_noise, ampl_noise, window_size)
+        n = 5000 #number of windows
+        window_size = 1000 #window size
+
+        #set difficulty of domain adaptation problem
+        frequencies = [1,4,1.9,3.1] #characteristic frequencies [class0_domain0,class1_domain0,class0_domain1,class1_domain1]
+        amplitudes = [6,2,5,4] #characteristic amplitude [class0_domain0,class1_domain0,class0_domain1,class1_domain1]
+        freq_noise = 0.5 # noise perturbing the characteristic frequency during each sampling process
+        ampl_noise = 4 # noise perturbing the characteristic amplitude during each sampling process
+        self.n_samples, self.x_data, self.y_data, _, _ = create_data_window(n, frequencies, amplitudes, freq_noise, ampl_noise, window_size)
         
         
                   
@@ -118,7 +121,7 @@ class Dataset_Dummy_Target_Window(Dataset):
 
 
 
-
+#Model
 class CNN(nn.Module):
     def __init__(self, input_size, output_size):
         super(CNN, self).__init__()
@@ -146,7 +149,7 @@ class CNN(nn.Module):
         return output
 
 
-#from mmd_loss import MMD_loss
+#MMD-Loss
 class MMD_loss(nn.Module):
     def __init__(self, fix_sigma = None, kernel_mul = 2.0, kernel_num = 5):
         super(MMD_loss, self).__init__()
@@ -154,6 +157,8 @@ class MMD_loss(nn.Module):
         self.kernel_mul = kernel_mul
         self.fix_sigma = fix_sigma
         return
+    
+    #Gaussian Kernel
     def gaussian_kernel(self, source, target, kernel_mul=2.0, kernel_num=5, fix_sigma=None):
         n_samples = int(source.size()[0])+int(target.size()[0])
         total = torch.cat([source, target], dim=0)
@@ -170,6 +175,7 @@ class MMD_loss(nn.Module):
         kernel_val = [torch.exp(-L2_distance / bandwidth_temp) for bandwidth_temp in bandwidth_list]
         return sum(kernel_val)
 
+    #MMD-Loss
     def forward(self, source, target):
 
         batch_size = int(source.size()[0])
@@ -182,13 +188,12 @@ class MMD_loss(nn.Module):
         return loss
 
 
-
+#Forward pass during training
 def forward(model, classifier_layer_1, classifier_layer_2, classifier_layer_3, data, labels_source, labels_target, criterion, MMD_loss, GAMMA):
         
-        #Feature extraction
+        #Feature Pass
         outputs = model(data.float())
 
-        #Classification
         x_src = classifier_layer_1(outputs[:batch_size, :])
         x_tar = classifier_layer_1(outputs[batch_size:, :])
         source_out = classifier_layer_2(x_src)
@@ -197,16 +202,9 @@ def forward(model, classifier_layer_1, classifier_layer_2, classifier_layer_3, d
         target_pred = classifier_layer_3(target_out)
         
         #CE loss
-        ce_loss = criterion(source_pred, labels_source)
-        target_ce_loss = criterion(target_pred, labels_target)
-        
-        # MMD loss
-        #mmd_loss_1 = mmd_loss.forward(x_src, x_tar)
-        #mmd_loss_2 = mmd_loss.forward(source_out, target_out)
-        #mmd_loss = mmd_loss_1 + mmd_loss_2
-        
-        
-
+        ce_loss = criterion(source_pred, labels_source) #Source Domain
+        target_ce_loss = criterion(target_pred, labels_target) #Target Domain
+ 
         #collect information about labels, predictions
         n_correct_source = 0
         n_correct_target = 0
@@ -214,9 +212,7 @@ def forward(model, classifier_layer_1, classifier_layer_2, classifier_layer_3, d
         n_samples_target = 0
         
         
-        # plot list
-        
-        
+        # Data Collector for MMD-Loss
         class_0_source_out = torch.empty((0,source_out.size()[1]))
         class_1_source_out = torch.empty((0,source_out.size()[1]))
         class_0_target_out = torch.empty((0,target_out.size()[1]))
@@ -228,10 +224,10 @@ def forward(model, classifier_layer_1, classifier_layer_2, classifier_layer_3, d
         class_1_target_x = torch.empty((0,x_tar.size()[1]))
         
         
-        #SOURCE
+        #Source Domain
         for i in range(len(labels_source)):
-            
-            #check correct prediction
+        
+            #Source Accuracy
             label_source = labels_source[i]
             output_source = torch.argmax(source_pred[i])
             if label_source == output_source:
@@ -248,9 +244,10 @@ def forward(model, classifier_layer_1, classifier_layer_2, classifier_layer_3, d
                 
         acc_total_source = 100.0 * n_correct_source / n_samples_source
             
-        #TARGET
+        #Target Domain
         for i in range(len(labels_target)):
-            #check correct prediction
+
+            #Target Accuracy
             label_target = labels_target[i]
             output_target = torch.argmax(target_pred[i])
             if label_target == output_target:
@@ -264,38 +261,39 @@ def forward(model, classifier_layer_1, classifier_layer_2, classifier_layer_3, d
             elif label_target == 1:
                 class_1_target_out = torch.cat((class_1_target_out, torch.unsqueeze(target_out[i,:], 0)), 0)
                 class_1_target_x = torch.cat((class_1_target_x, torch.unsqueeze(x_tar[i,:], 0)), 0)
+
+        acc_total_target = 100.0 * n_correct_target / n_samples_target
         
         
-        #MMD loss between elements of same class
+        #get minimum length of vectors used for MMD-Loss
         min_0_x = min(class_0_source_x.size()[0], class_0_target_x.size()[0])
         min_1_x = min(class_1_source_x.size()[0], class_1_target_x.size()[0])
         min_0_out = min(class_0_source_out.size()[0], class_0_target_out.size()[0])
         min_1_out = min(class_1_source_out.size()[0], class_1_target_out.size()[0])
-        
+
+        #MMD-Loss between samples of equal class
         mmd_x_class_0 = MMD_loss.forward(class_0_source_x[:min_0_x,:],class_0_target_x[:min_0_x,:])
         mmd_x_class_1 = MMD_loss.forward(class_1_source_x[:min_1_x,:], class_1_target_x[:min_1_x,:])
         mmd_out_class_0 = MMD_loss.forward(class_0_source_out[:min_0_out,:], class_0_target_out[:min_0_out,:])
         mmd_out_class_1 = MMD_loss.forward(class_1_source_out[:min_1_out,:], class_1_target_out[:min_1_out,:])
-        #mmd_loss = mmd_x_class_0 + mmd_x_class_1 + mmd_out_class_0 + mmd_out_class_1
-        mmd_loss = mmd_out_class_0 + mmd_out_class_1
+        mmd_loss = mmd_x_class_0 + mmd_x_class_1 + mmd_out_class_0 + mmd_out_class_1
+        #mmd_loss = mmd_out_class_0 + mmd_out_class_1
         
+        #get minimum length of vectors used for MMD-Loss
         min_0_x = min(class_0_source_x.size()[0], class_1_target_x.size()[0])
         min_1_x = min(class_1_source_x.size()[0], class_0_target_x.size()[0])
         min_0_out = min(class_0_source_out.size()[0], class_1_target_out.size()[0])
         min_1_out = min(class_1_source_out.size()[0], class_0_target_out.size()[0])
         
+        #MMD-Loss between samples of different classes
         mmd_x_dist_1 = MMD_loss.forward(class_0_source_x[:min_0_x,:], class_1_target_x[:min_0_x,:])
         mmd_x_dist_2 = MMD_loss.forward(class_1_source_x[:min_1_x,:], class_0_target_x[:min_1_x,:])
         mmd_out_dist_1 = MMD_loss.forward(class_0_source_out[:min_0_out,:], class_1_target_out[:min_0_out,:])
         mmd_out_dist_2 = MMD_loss.forward(class_1_source_out[:min_1_out,:], class_0_target_out[:min_1_out,:])
         mmd_dist = mmd_x_dist_1 + mmd_x_dist_2 + mmd_out_dist_1 + mmd_out_dist_2
+
         #total loss
-        #loss = ce_loss + GAMMA * mmd_loss# - GAMMA * mmd_dist
         loss = ce_loss + GAMMA * (mmd_loss - mmd_dist)
-        
-
-        acc_total_target = 100.0 * n_correct_target / n_samples_target
-
         
         return loss, mmd_loss, ce_loss, target_ce_loss, acc_total_source, acc_total_target, class_0_source_out, class_1_source_out, class_0_target_out, class_1_target_out
     
@@ -336,11 +334,6 @@ if __name__ == "__main__":
     f_learning_curve_writer.writerow(['loss_val', 'mmd_loss_val', 'source_ce_loss_val', 'target_ce_loss_val', 'acc_total_source_val', 'acc_total_target_val', 'loss_train', 'mmd_loss_train', 'source_ce_loss_train', 'target_ce_loss_train', 'acc_total_source_train', 'acc_total_target_train'])
 
 
-    #collect loss for each batch
-    loss_collected = 0
-    target_ce_loss_collected = 0
-    mmd_loss_collected = 0
-
     loss_list = {}
     loss_list['train']=[]
     loss_list['val']=[]
@@ -372,7 +365,6 @@ if __name__ == "__main__":
     # check if CUDA is available
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"the device for executing the code is: {device}")
-
 
     #dataset source
     dataset_source = Dataset_Dummy_Source_Window()
@@ -446,10 +438,9 @@ if __name__ == "__main__":
 
 
     #define training params
-    num_epochs = 10
+    num_epochs = 2
     learning_rate = 0.008#0.008
     GAMMA = 30# 1000 more weight to transferability
-    #SIGMA = [2,4,8]  # default 1
     SIGMA = torch.tensor([1,2,4,8,16],dtype=torch.float64)
 
     #models
@@ -482,12 +473,14 @@ if __name__ == "__main__":
     # Train and Validate the model
     for epoch in range(num_epochs):
         print(f"epoch{epoch}/{num_epochs}")
-        #plot mmd
+
+        # distribution plot data collector
         class_0_source_collect = np.empty((0,3))
         class_1_source_collect = np.empty((0,3))
         class_0_target_collect = np.empty((0,3))
         class_1_target_collect = np.empty((0,3))
         
+        #learning curve collector
         loss_collected = 0
         source_ce_loss_collected = 0
         target_ce_loss_collected = 0
@@ -566,33 +559,8 @@ if __name__ == "__main__":
                     
             #plot
             if phase == "val" and (epoch ==0 or epoch ==2 or epoch == 4 or epoch ==6 or epoch ==8 or epoch ==10):
-                """
-                fig = plt.figure()
-                plt.gcf().set_size_inches((20, 20)) 
-                ax = fig.add_subplot(projection='3d')
-
-                m = [1,2,3,4]
-                data = [class_0_source_collect, class_1_source_collect, class_0_target_collect, class_1_target_collect]
-                data_label = ["Source: Class 0", "Source: Class 1", "Target: Class 0", "Target: Class 1"]
-                for i in range(4):
-                    ax.scatter(data[i][:,0], data[i][:,1], data[i][:,2], marker=m[i], label=data_label[i])
                 
-        
-                
-                #ax.legend(prop={'size': 13})
-                
-                
-                ax.set_xlabel('Neuron 1 $\longrightarrow$', rotation=0, labelpad=10, size=20)
-                ax.set_ylabel('Neuron 2 $\longrightarrow$', rotation=0, labelpad=10, size=20)
-                ax.set_zlabel('Neuron 3 $\longrightarrow$', rotation=0, labelpad=10, size=20)
-                
-                
-                
-                plt.rcParams.update({'font.size': 10})
-                
-                #plt.show()
-                fig.savefig(f"data_distribution/no_mmd_epoch{epoch}", format='pdf')
-                """
+                # store distirbution plot data
                 df1 = pd.DataFrame({'class_0_source_fc2_collect_0_dim':class_0_source_collect[:, 0]})
                 df2 = pd.DataFrame({'class_0_source_fc2_collect_1_dim':class_0_source_collect[:, 1]})
                 df3 = pd.DataFrame({'class_0_source_fc2_collect_2_dim':class_0_source_collect[:, 2]})
@@ -607,9 +575,7 @@ if __name__ == "__main__":
                 df12 = pd.DataFrame({'class_1_target_fc2_collect_2_dim':class_1_target_collect[:, 2]})
                 pd.concat([df1,df2,df3,df4,df5,df6,df7,df8,df9,df10,df11,df12],axis=1).to_csv(f'data_distribution_data/data_distribution_{epoch}.csv', index = False)
 
-                    
-                    
-        
+            # normalize learning curve plot data
             running_loss = loss_collected / len(dataloaders[phase]["source"])
             
             running_source_ce_loss = source_ce_loss_collected / len(dataloaders[phase]["source"])
@@ -620,9 +586,10 @@ if __name__ == "__main__":
             
             running_mmd_loss = mmd_loss_collected/ len(dataloaders[phase]["source"])
 
-            
+            # write one csv line for learning curve plot data
             learning_curve_data_collect = learning_curve_data_collect + [running_loss.item(), running_mmd_loss.item(), running_source_ce_loss.item(), running_target_ce_loss.item(), running_acc_source, running_acc_target]
 
+            #Reset training information collector
             loss_collected = 0
             source_ce_loss_collected = 0
             target_ce_loss_collected = 0
@@ -630,7 +597,7 @@ if __name__ == "__main__":
             acc_total_source_collected = 0
             acc_total_target_collected = 0
             
-            
+            # store learning curve plot data
             loss_list[phase].append(running_loss.item())
 
             target_ce_loss_list[phase].append(running_source_ce_loss.item())
@@ -643,105 +610,18 @@ if __name__ == "__main__":
             
             target_accuracy_list[phase].append(running_acc_target)
             
+            # store learning curve plot data for Tensorboard
             writer[phase].add_scalar(f'loss_list', running_loss.item(), epoch)
             writer[phase].add_scalar(f'target_ce_loss_list', running_source_ce_loss.item(), epoch)
             writer[phase].add_scalar(f'source_ce_loss_list', running_target_ce_loss.item(), epoch)
             writer[phase].add_scalar(f'mmd_loss_list', running_mmd_loss.item(), epoch)
             writer[phase].add_scalar(f'source_accuracy_list', running_acc_source, epoch)
             writer[phase].add_scalar(f'target_accuracy_list', running_acc_target, epoch)
-
             
-            
+        #write learning curve plot data in csv
         f_learning_curve_writer.writerow(learning_curve_data_collect)
 
         print(f"Epoch {epoch+1}/{num_epochs} successfull")
     
+    #close csv writer for learnign curve plot data
     f_learning_curve.close()
-
-
-
-    """
-
-
-    import pandas as pd
-
-    fig1 = plt.figure()
-    plt.title('Total Loss')
-    plt.plot(loss_list['train'], 'bo-', label = 'train', linewidth=1,markersize=0.1)
-    plt.plot(loss_list['val'], 'ro-', label = 'val', linewidth=1,markersize=0.1)
-    plt.legend()
-    plt.xlabel("Epoch $\longrightarrow$")
-    plt.ylabel("Total Loss $\longrightarrow$")
-    plt.show()
-    fig1.savefig('learning_curve/total_loss', format='pdf')
-    pd.DataFrame(loss_list['train']).to_csv('learning_curve_data/loss_list_train.csv',index=False,header=False)
-    pd.DataFrame(loss_list['val']).to_csv('learning_curve_data/loss_list_val.csv',index=False,header=False)
-
-
-    fig2 = plt.figure()
-    plt.title('CE-Loss Target Domain')
-    plt.plot(target_ce_loss_list['train'], 'bo-', label = 'train', linewidth=1,markersize=0.1)
-    plt.plot(target_ce_loss_list['val'], 'ro-', label = 'val', linewidth=1,markersize=0.1)
-    plt.legend()
-    plt.xlabel("Epoch $\longrightarrow$")
-    plt.ylabel("Target CE-Loss $\longrightarrow$")
-    plt.show()
-    fig2.savefig('learning_curve/target_ce_loss', format='pdf')
-    pd.DataFrame(target_ce_loss_list['train']).to_csv('learning_curve_data/target_ce_loss_train.csv',index=False,header=False)
-    pd.DataFrame(target_ce_loss_list['val']).to_csv('learning_curve_data/target_ce_loss_val.csv',index=False,header=False)
-
-    fig3 = plt.figure()
-    plt.title('CE-Loss Source Domain')
-    plt.plot(source_ce_loss_list['train'], 'bo-', label = 'train', linewidth=1,markersize=0.1)
-    plt.plot(source_ce_loss_list['val'], 'ro-', label = 'val', linewidth=1,markersize=0.1)
-    plt.legend()
-    plt.xlabel("Epoch $\longrightarrow$")
-    plt.ylabel("Source CE-Loss $\longrightarrow$")
-    plt.show()
-    fig3.savefig('learning_curve/source_ce_loss', format='pdf')
-    pd.DataFrame(source_ce_loss_list['train']).to_csv('learning_curve_data/source_ce_loss_train.csv',index=False,header=False)
-    pd.DataFrame(source_ce_loss_list['val']).to_csv('learning_curve_data/source_ce_loss_val.csv',index=False,header=False)
-
-
-    fig4 = plt.figure()
-    plt.title('MMD-Loss')
-    plt.plot(mmd_loss_list['train'], 'bo-', label = 'train', linewidth=1,markersize=0.1)
-    plt.plot(mmd_loss_list['val'], 'ro-', label = 'val', linewidth=1,markersize=0.1)
-    plt.legend()
-    plt.xlabel("Epoch $\longrightarrow$")
-    plt.ylabel("MMD-Loss $\longrightarrow$")
-    plt.show()
-    fig4.savefig('learning_curve/mmd_loss', format='pdf')
-    pd.DataFrame(mmd_loss_list['train']).to_csv('learning_curve_data/mmd_loss_train.csv',index=False,header=False)
-    pd.DataFrame(mmd_loss_list['val']).to_csv('learning_curve_data/mmd_loss_val.csv',index=False,header=False)
-
-
-
-
-    fig5 = plt.figure()
-    plt.title('Accuracy Source Domain')
-    plt.plot(source_accuracy_list['train'], 'bo-', label = 'train', linewidth=1,markersize=0.1)
-    plt.plot(source_accuracy_list['val'], 'ro-', label = 'val', linewidth=1,markersize=0.1)
-    plt.legend()
-    plt.xlabel("Epoch $\longrightarrow$")
-    plt.ylabel("Source Accuracy $\longrightarrow$")
-    plt.show()
-    fig5.savefig('learning_curve/source_accuracy', format='pdf')
-    pd.DataFrame(source_accuracy_list['train']).to_csv('learning_curve_data/source_accuracy_train.csv',index=False,header=False)
-    pd.DataFrame(source_accuracy_list['val']).to_csv('learning_curve_data/source_accuracy_val.csv',index=False,header=False)
-
-
-
-    fig6 = plt.figure()
-    plt.title('Accuracy Target Domain')
-    plt.plot(target_accuracy_list['train'], 'bo-', label = 'train', linewidth=1,markersize=0.1)
-    plt.plot(target_accuracy_list['val'], 'ro-', label = 'val', linewidth=1,markersize=0.1)
-    plt.legend()
-    plt.xlabel("Epoch $\longrightarrow$")
-    plt.ylabel("Target Accuracy $\longrightarrow$")
-    plt.show()
-    fig6.savefig('learning_curve/target_accuracy', format='pdf')
-    pd.DataFrame(target_accuracy_list['train']).to_csv('learning_curve_data/target_accuracy_train.csv',index=False,header=False)
-    pd.DataFrame(target_accuracy_list['val']).to_csv('learning_curve_data/target_accuracy_val.csv',index=False,header=False)
-
-    """
