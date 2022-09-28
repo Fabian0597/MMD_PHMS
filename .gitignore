@@ -1,3 +1,5 @@
+.DS_Store
+
 CODE_REAL_DATA/runs
 CODE_REAL_DATA/__pycache__
 CODE_REAL_DATA/experiments
