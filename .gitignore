@@ -1,7 +1,9 @@
 CODE_REAL_DATA/runs
 CODE_REAL_DATA/__pycache__
 CODE_REAL_DATA/experiments
+CODE_REAL_DATA/.DS_Store
 
 CODE_DUMMY_DATA/runs
 CODE_DUMMY_DATA/__pycache__
 CODE_DUMMY_DATA/experiments
+CODE_DUMMY_DATA/.DS_Store
