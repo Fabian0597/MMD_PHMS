@@ -32,19 +32,19 @@ def main():
     #Unpack arguments for training
     train_params = sys.argv[1:]
     print(train_params)
-
-    experiment_name = str(train_params[0]) #used in Tensorboard when using tracking several Experiments --> prevents overwriting data from previous experiment
-    num_epochs = int(train_params[1]) #defines number of training epochs
-    GAMMA = float(train_params[2]) #defines GAMMA value 
-    GAMMA_reduction = float(train_params[3]) # can be used to decrease GAMMA each Epoch (GAMMA_next_epoch = GAMMA * GAMMA_reduction)
-    num_pool = int(train_params[4]) #if 1 --> Pooling layer just after Conv1, if 2 --> Pooling layer just after Conv1 & Conv2 , if 3 --> Pooling layer just after Conv1 & Conv2 & Conv3
-    MMD_layer_activation_flag = train_params[5:11] #defines which layer ins included in MMD Loss --> Bool List for layer order [Conv1, Conv2, Conv3, Flatten, FC1, FC2]
+    gpu_name = str(train_params[0])
+    experiment_name = str(train_params[1]) #used in Tensorboard when using tracking several Experiments --> prevents overwriting data from previous experiment
+    num_epochs = int(train_params[2]) #defines number of training epochs
+    GAMMA = float(train_params[3]) #defines GAMMA value 
+    GAMMA_reduction = float(train_params[4]) # can be used to decrease GAMMA each Epoch (GAMMA_next_epoch = GAMMA * GAMMA_reduction)
+    num_pool = int(train_params[5]) #if 1 --> Pooling layer just after Conv1, if 2 --> Pooling layer just after Conv1 & Conv2 , if 3 --> Pooling layer just after Conv1 & Conv2 & Conv3
+    MMD_layer_activation_flag = train_params[6:12] #defines which layer ins included in MMD Loss --> Bool List for layer order [Conv1, Conv2, Conv3, Flatten, FC1, FC2]
     MMD_layer_activation_flag = [eval(item.title()) for item in MMD_layer_activation_flag] #convert from String to Bool values
 
     #Read in variable lists with variable length
 
-    len_feature_of_interest = 11 + int(train_params[11]) + 1
-    features_of_interest = train_params[12:len_feature_of_interest] #Features of interest
+    len_feature_of_interest = 12 + int(train_params[12]) + 1
+    features_of_interest = train_params[13:len_feature_of_interest] #Features of interest
 
     len_list_of_source_BSD_states = len_feature_of_interest + int(train_params[len_feature_of_interest]) + 1
     list_of_source_BSD_states = train_params[len_feature_of_interest+1:len_list_of_source_BSD_states] #Source BSD states
@@ -58,10 +58,10 @@ def main():
     len_class_1_labels = len_class_0_labels + int(train_params[len_class_0_labels]) + 1
     class_1_labels = train_params[len_class_0_labels+1:len_class_1_labels] #Classes considered in healthy class
 
-    print(f"\nTRAINING PARAMETER: \n Experiment Name: {experiment_name} \n Number of Epochs: {num_epochs} \n GAMMA: {GAMMA} \n GAMMA reduction: {GAMMA_reduction} \n number of Pooling Layers: {num_pool} \n Flags for layers inlcuded in MMD Loss: {MMD_layer_activation_flag} \n Features of Interest: {features_of_interest} \n Folders of considered Source BSD states: {list_of_source_BSD_states} \n Folders of considered Target BSD states: {list_of_target_BSD_states} \n Classes considered as unhealthy binary Class: {class_0_labels} \n Classes considered as healthy binary Class: {class_1_labels}")
+    print(f"\nTRAINING PARAMETER: \n GPU Name: {gpu_name} \n Experiment Name: {experiment_name} \n Number of Epochs: {num_epochs} \n GAMMA: {GAMMA} \n GAMMA reduction: {GAMMA_reduction} \n number of Pooling Layers: {num_pool} \n Flags for layers inlcuded in MMD Loss: {MMD_layer_activation_flag} \n Features of Interest: {features_of_interest} \n Folders of considered Source BSD states: {list_of_source_BSD_states} \n Folders of considered Target BSD states: {list_of_target_BSD_states} \n Classes considered as unhealthy binary Class: {class_0_labels} \n Classes considered as healthy binary Class: {class_1_labels}")
 
     #Check if CUDA is available
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device(gpu_name if torch.cuda.is_available() else "cpu")
     print(f"the device for executing the code is: {device}")
 
     #Create random seeds
@@ -153,15 +153,16 @@ def main():
     
     
     ###Dataloader Variant 1####
-    
+    """
     dataloader_source = Dataloader(data_path, list_of_source_BSD_states, window_size, overlap_size, features_of_interest, dataloader_split_ce, dataloader_split_mmd, dataloader_split_val, batch_size, random_seed, class_0_labels, class_1_labels)
     dataloader_target = Dataloader(data_path, list_of_target_BSD_states, window_size, overlap_size, features_of_interest, dataloader_split_ce, dataloader_split_mmd, dataloader_split_val, batch_size, random_seed, class_0_labels, class_1_labels)
     source_loader = dataloader_source.create_dataloader()
     target_loader = dataloader_target.create_dataloader()
-    
     """
+    
     ### Dataloader Variant 2###
-
+    """
+    """
     #Names of numpy arrays where data is stored --> stored as .npy
     source_numpy_array_names = ["source_X", "source_y"]
     target_numpy_array_names = ["target_X", "target_y"]
@@ -183,6 +184,7 @@ def main():
     dataloader_target = Dataloader_prep_dataset(dataset_target, dataloader_split_ce, dataloader_split_mmd, dataloader_split_val, batch_size, random_seed)
     source_loader = dataloader_source.create_dataloader()
     target_loader = dataloader_target.create_dataloader()
+    """
     """
 
     #define Sigma for RBF Kernel in MMD Loss
@@ -210,9 +212,9 @@ def main():
         print("Models are on GPU!!")
 
     #Loss
-    criterion = torch.nn.CrossEntropyLoss()
-    MMD_loss_calculator = MMD_loss(fix_sigma = SIGMA)
-    MMD_loss_CNN_calculator = MMD_loss_CNN(fix_sigma = SIGMA)
+    criterion = torch.nn.CrossEntropyLoss().to(device)
+    MMD_loss_calculator = MMD_loss(fix_sigma = SIGMA).to(device)
+    MMD_loss_CNN_calculator = MMD_loss_CNN(fix_sigma = SIGMA).to(device)
     loss_cnn = Loss_CNN(model_cnn, model_fc, criterion, MMD_loss_calculator, MMD_loss_CNN_calculator, MMD_layer_activation_flag)
 
     #Optimizer
@@ -302,10 +304,12 @@ def main():
                 batch_data_target, labels_target = iter_loader_target.next() #Windows and labels from target domain (dim = Batch Size)
                 batch_data = torch.cat((batch_data_source, batch_data_target), dim=0) #Conncatination of windows from Source and Target Domain (dim = Batch Size*2)
 
+                labels_source = labels_source.to(device) #Data to GPU if availbl
+                labels_target = labels_target.to(device) #Data to GPU if availbl
                 batch_data = batch_data.to(device) #Data to GPU if availble
                 
-                if batch_data.is_cuda and labels_source.is_cuda and labels_target.is_cuda:
-                    print("Samples are all on GPU !!")
+                #if batch_data.is_cuda and labels_source.is_cuda and labels_target.is_cuda:
+                #    print("Samples are all on GPU !!")
 
                 #Validation
                 if phase == "val":
@@ -316,10 +320,10 @@ def main():
                         _, mmd_loss, source_ce_loss, target_ce_loss, acc_total_source, acc_total_target, balanced_target_accuracy, class_0_source_fc2, class_1_source_fc2, class_0_target_fc2, class_1_target_fc2 = loss_cnn.forward(batch_data, labels_source, labels_target, MMD_loss_flag_phase[phase], GAMMA)
                         
                         #Collect latent features of fc2 for plot 
-                        class_0_source_fc2_collect = torch.cat((class_0_source_fc2_collect, class_0_source_fc2), 0)
-                        class_1_source_fc2_collect = torch.cat((class_1_source_fc2_collect, class_1_source_fc2), 0)
-                        class_0_target_fc2_collect = torch.cat((class_0_target_fc2_collect, class_0_target_fc2), 0)
-                        class_1_target_fc2_collect = torch.cat((class_1_target_fc2_collect, class_1_target_fc2), 0)
+                        class_0_source_fc2_collect = torch.cat((class_0_source_fc2_collect, class_0_source_fc2.to("cpu")), 0)
+                        class_1_source_fc2_collect = torch.cat((class_1_source_fc2_collect, class_1_source_fc2.to("cpu")), 0)
+                        class_0_target_fc2_collect = torch.cat((class_0_target_fc2_collect, class_0_target_fc2.to("cpu")), 0)
+                        class_1_target_fc2_collect = torch.cat((class_1_target_fc2_collect, class_1_target_fc2.to("cpu")), 0)
 
                 #Training
                 else:
