@@ -20,9 +20,9 @@ num_epochs=100
 
 #GAMMA Specification
 #GAMMA=0.05 #GAMMA hyperparameter
-#GAMMAs=(1)
+#GAMMAs=(0)
 GAMMAs=(0.1 0.05)
-#GAMMA_NULL=(0)
+GAMMA_NULL=(0)
 
 GAMMA_reduction=1 #GAMMA reduction of each epoch GAMMA_next_epoch = GAMMA * GAMMA_reduction
 
@@ -35,7 +35,7 @@ MMD_layer_activation_flag_FC=( False False False True True True )
 MMD_layer_activation_flag_CNN=( True True True False False False )
 
 #Features which should be considered by models
-#features_of_interest=("D:P_mech./X")
+#features_of_interest=("D:z_top")
 features_of_interest=("D:P_mech./X" "D:I_ist/X" "D:I_soll/X" "C:z_nut" "C:z_top" "D:x_nut" "D:z_top")
 
 #Define which BSD states should be included in source and target domain
