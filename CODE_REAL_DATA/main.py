@@ -21,6 +21,8 @@ from MMD_loss_CNN import MMD_loss_CNN
 from CNN import CNN
 from plotter import Plotter
 
+from file_selector import File_selector
+
 #variant2
 from Preprocesser import Preprocessor
 from TimeSeriesData_prep_dataset import TimeSeriesData_prep_dataset
@@ -46,14 +48,21 @@ def main():
     len_feature_of_interest = 12 + int(train_params[12]) + 1
     features_of_interest = train_params[13:len_feature_of_interest] #Features of interest
 
-    len_list_of_source_BSD_states = len_feature_of_interest + int(train_params[len_feature_of_interest]) + 1
-    list_of_source_BSD_states = train_params[len_feature_of_interest+1:len_list_of_source_BSD_states] #Source BSD states
+    #len_list_of_source_BSD_states = len_feature_of_interest + int(train_params[len_feature_of_interest]) + 1
+    #list_of_source_BSD_states = train_params[len_feature_of_interest+1:len_list_of_source_BSD_states] #Source BSD states
 
-    len_list_of_target_BSD_states = len_list_of_source_BSD_states + int(train_params[len_list_of_source_BSD_states]) + 1
-    list_of_target_BSD_states = train_params[len_list_of_source_BSD_states+1:len_list_of_target_BSD_states] #Target BSD states
+    #len_list_of_target_BSD_states = len_list_of_source_BSD_states + int(train_params[len_list_of_source_BSD_states]) + 1
+    #list_of_target_BSD_states = train_params[len_list_of_source_BSD_states+1:len_list_of_target_BSD_states] #Target BSD states
+    file_selector = File_selector()
+    class_0_source, class_1_source, class_0_target, class_1_target = file_selector.select()
 
-    len_class_0_labels = len_list_of_target_BSD_states + int(train_params[len_list_of_target_BSD_states]) + 1
-    class_0_labels = train_params[len_list_of_target_BSD_states+1:len_class_0_labels] #Classes considered in unhealthy class
+    list_of_source_BSD_states = [class_0_source, class_1_source]
+    list_of_target_BSD_states = [class_0_target, class_1_target]
+
+    print(list_of_source_BSD_states, list_of_target_BSD_states)
+
+    len_class_0_labels = len_feature_of_interest + int(train_params[len_feature_of_interest]) + 1
+    class_0_labels = train_params[len_feature_of_interest+1:len_class_0_labels] #Classes considered in unhealthy class
 
     len_class_1_labels = len_class_0_labels + int(train_params[len_class_0_labels]) + 1
     class_1_labels = train_params[len_class_0_labels+1:len_class_1_labels] #Classes considered in healthy class
@@ -154,16 +163,16 @@ def main():
     
     
     ###Dataloader Variant 1####
-    """
+    
     dataloader_source = Dataloader(data_path, list_of_source_BSD_states, window_size, overlap_size, features_of_interest, dataloader_split_ce, dataloader_split_mmd, dataloader_split_val, batch_size, random_seed, class_0_labels, class_1_labels)
     dataloader_target = Dataloader(data_path, list_of_target_BSD_states, window_size, overlap_size, features_of_interest, dataloader_split_ce, dataloader_split_mmd, dataloader_split_val, batch_size, random_seed, class_0_labels, class_1_labels)
     source_loader = dataloader_source.create_dataloader()
     target_loader = dataloader_target.create_dataloader()
-    """
+    
     
     ### Dataloader Variant 2###
     """
-    """
+    
     #Names of numpy arrays where data is stored --> stored as .npy
     source_numpy_array_names = ["source_X", "source_y"]
     target_numpy_array_names = ["target_X", "target_y"]
@@ -186,7 +195,7 @@ def main():
     source_loader = dataloader_source.create_dataloader()
     target_loader = dataloader_target.create_dataloader()
     """
-    """
+    
 
     #define Sigma for RBF Kernel in MMD Loss
     SIGMA = torch.tensor([1,2,4,8,16],dtype=torch.float64)
