@@ -21,7 +21,7 @@ num_epochs=100
 #GAMMA Specification
 #GAMMA=0.05 #GAMMA hyperparameter
 #GAMMAs=(1)
-GAMMAs=(0.05 0.5 1)
+GAMMAs=(0.1 0.01)
 GAMMA_NULL=(0)
 
 GAMMA_reduction=1 #GAMMA reduction of each epoch GAMMA_next_epoch = GAMMA * GAMMA_reduction
@@ -49,7 +49,7 @@ class_1_labels=("3") #classes considered in healthy class
 experiment_number=0
 
 #rm -r runs
-for i in {1..2}
+for i in {1..4}
 do
     for feature_of_interest in ${features_of_interest[@]}; do
         for GAMMA in ${GAMMAs[@]}; do

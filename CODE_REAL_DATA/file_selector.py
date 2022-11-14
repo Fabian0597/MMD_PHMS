@@ -6,6 +6,13 @@ class File_selector():
         self.class_0_test = [19,25,26]
         self.class_1_test = [21,22,24,27]
 
+        self.classes = {
+            "P":[4,9,13,18,22,27],
+            "1":[3,6,12,15,21,24],
+            "2":[2,5,11,14,20,23],
+            "3":[1,7,8,10,16,17,19,25,26]
+        }
+
     def select(self):
 
 
@@ -18,6 +25,8 @@ class File_selector():
             picked_class_1_test = self.class_1_test[random.randint(0,len(self.class_1_test)-1)]
             if picked_class_0_test != picked_class_0_train+18 and picked_class_1_test != picked_class_1_train+18:
                 break
+
+        
         return str(picked_class_0_train), str(picked_class_1_train), str(picked_class_0_test), str(picked_class_1_test)
         
 
