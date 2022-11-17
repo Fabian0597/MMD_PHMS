@@ -47,7 +47,7 @@ class_1_labels=("3") #classes considered in healthy class
 experiment_number=0
 
 #rm -r runs
-for i in {0..5}
+for i in {0..4}
 do
     for feature_of_interest in ${features_of_interest[@]}; do
         for GAMMA in ${GAMMAs[@]}; do
@@ -61,7 +61,7 @@ do
 
         done
         
-        python3 main.py $gpu_name $experiment_name $num_epochs $GAMMA_NULL $GAMMA_reduction $num_pool ${MMD_layer_activation_flag_FULL[@]} ${#feature_of_interest[@]} ${feature_of_interest[@]} ${#class_0_labels[@]} ${class_0_labels[@]} ${#class_1_labels[@]} ${class_1_labels[@]}
+        #python3 main.py $gpu_name $experiment_name $num_epochs $GAMMA_NULL $GAMMA_reduction $num_pool ${MMD_layer_activation_flag_FULL[@]} ${#feature_of_interest[@]} ${feature_of_interest[@]} ${#class_0_labels[@]} ${class_0_labels[@]} ${#class_1_labels[@]} ${class_1_labels[@]}
 
     done
 done

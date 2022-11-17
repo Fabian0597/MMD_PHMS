@@ -235,6 +235,15 @@ def main():
 
     optimizer2 = torch.optim.Adam(model_fc.parameters(), lr=1e-2, betas=(0.9, 0.999))
 
+    #Schedular
+    lambda1 = lambda epochs: 0.99 ** epochs
+    schedular1 = torch.optim.lr_scheduler.LambdaLR(optimizer1, lr_lambda = lambda1)
+
+    lambda2 = lambda epochs: 0.99 ** epochs
+    schedular2 = torch.optim.lr_scheduler.LambdaLR(optimizer2, lr_lambda = lambda2)
+
+
+
     #Safe the random seed as txt file
     f_random_seed = open(f'{folder_to_store_data}/best_model/random_seed.txt', 'w')
     f_random_seed.write(str(random_seed))
@@ -353,10 +362,12 @@ def main():
                         optimizer1.zero_grad()
                         loss.backward()
                         optimizer1.step()
+                        schedular1.step()
                     elif phase == "ce": # Phase 2 Optimization FC2 & FC3 with CE 
                         optimizer2.zero_grad()
                         loss.backward()
                         optimizer2.step()
+                        schedular2.step()
 
                 #collect loss, accuracies for each epoch
                 mmd_loss_collected += mmd_loss.item()
