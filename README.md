@@ -7,4 +7,11 @@ This Repository contains the Code for a deep learning-based domain adaptation He
 The architecture of the proposed PHM model consists of an one-dimensional CNN and a subsequent classifier. The CNN extracts expressive features, which are later used by the classifier to predict the health condition of the ball screw drives. After iteratively applying convolutional, pooling and batch normalization layers, the output of the CNN is flattened and normalized to an one-dimensional vector. This vector is fed to the subsequent classifier. The repetitive model training is separated into two phases. In the first phase, a weighted average of source cross entropy loss and maximum mean discrepancy loss is used to optimize the whole network. In the second phase, only the cross entropy loss is applied to optimize the final layers of the classifier. 
 
 
-![test](ressources/proposed_model.pdf)
+<table style="margin-left: auto; margin-right: auto; table-layout: fixed; width: 800px">
+  <tr>
+    <td style="margin-left: 100px; width: 800px"> <img src="ressources/proposed_model.png" width='400'></td>
+  </tr>
+  <tr>
+    <td style="width: 800px"" valign="top"> <b>Fig.5:</b> Local costmap (green) detects a new obstacle.
+  </tr>
+</table>
