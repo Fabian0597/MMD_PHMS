@@ -19,7 +19,7 @@ The Maximum Mean Discrepancy Loss estimates the domain discrepancy in the latent
 
  <p align="center">
   <img src="ressources/MMD_loss_visualization.png" width='650'/><br>
-  <strong>Fig. 1: </strong> Extraction of Maximum Mean Discrepancy and Cross Entropy Loss
+  <strong>Fig. 2: </strong> Extraction of Maximum Mean Discrepancy and Cross Entropy Loss
 </p>                                   
                                           
 ## Research Questions
