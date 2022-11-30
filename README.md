@@ -6,26 +6,22 @@ This Repository contains the Code for a deep learning-based domain adaptation He
 ## Model & Model Training
 The architecture of the proposed PHM model, which is visualized in fig.1, consists of an one-dimensional CNN and a subsequent classifier. The CNN extracts expressive features, which are later used by the classifier to predict the health condition of the ball screw drives. After iteratively applying convolutional, pooling and batch normalization layers, the output of the CNN is flattened and normalized to an one-dimensional vector. This vector is fed to the subsequent classifier. The repetitive model training is separated into two phases. In the first phase, a weighted average of Cross Entropy Loss and Maximum Mean Discrepancy Loss is used to optimize the whole network. In the second phase, only the Cross Entropy Loss is applied to optimize the final layers of the classifier. 
 
-<table style="margin-left: auto; margin-right: auto; table-layout: fixed; width: 800px">
-  <tr>
-    <td style="margin-left: 100px; width: 800px"> <img src="ressources/proposed_model.png" width='500'></td>
-  </tr>
-  <tr>
-    <td style="width: 800px"" valign="top"> <b>Fig.1:</b> Model Architecture and Traing Phases .
-  </tr>
-</table>
+
+                                          
+
+<p align="center">
+  <img src="ressources/proposed_model.png" width='500'/><br>
+  <strong>Fig. 1: </strong> Model Architecture and Traing Phases.
+</p>
 
 The Maximum Mean Discrepancy Loss estimates the domain discrepancy in the latent feature maps of the neural network. The Maximum Mean Discrepancy Loss facilitates the extraction of domain-invariant features. The domain discrepancy is measured as the squared distance between the distribution kernel embeddings in the reproducing kernel Hilbert space. The Maximum Mean Discrepancy Loss is applied in several layers of the CNN and classifier. The Cross Entropy Loss, which is applied in the final layer of the classifier, optimizes the model to increase the classification accuracy on the source domain data. The application of the different losses during the training is visualized in fig.2.
                                           
-<table style="margin-left: auto; margin-right: auto; table-layout: fixed; width: 800px">
-  <tr>
-    <td style="margin-left: 100px; width: 800px"> <img src="ressources/MMD_loss_visualization.png" width='650'></td>
-  </tr>
-  <tr>
-    <td style="width: 800px"" valign="top"> <b>Fig.2:</b> Model Architecture and Traing Phases .
-  </tr>
-</table>
 
+ <p align="center">
+  <img src="ressources/MMD_loss_visualization.png" width='650'/><br>
+  <strong>Fig. 1: </strong> Extraction of Maximum Mean Discrepancy and Cross Entropy Loss
+</p>                                   
+                                          
 ## Research Questions
 The thesis is centered around three main research questions. These research questions were defined beforehand to guarantee a structured development of the PHM systems. The questions were formulated based on common problems and challenges in the domain adaptation and the PHM community. In order to evlaluate the deep learning-based domain adaptation Health Monitoring System in the context of these formulated research questions, it was evaluated on a synthetic dummy dataset.
 
@@ -158,11 +154,11 @@ Most domain adaptation approaches reduce the domain discrepancy in the task-spec
 ***
 #### Results
 
-Two different Maximum Mean Discrepancy Loss types were developed and afterward compared on the dummy dataset. Table 1 specifies the layers of the neural network considered by those Maximum Mean Discrepancy Loss types:
+Two different Maximum Mean Discrepancy Loss types were developed and afterward compared on the dummy dataset. Tab. 1 specifies the layers of the neural network considered by those Maximum Mean Discrepancy Loss types:
 
 <p align="center">
   <img src="ressources/Layer_Choice_DUMMY.png" width='450'/><br>
-  <strong>Table 1: </strong> Overview of the latent feature maps included in the different Maximum Mean Discrepancy Loss types
+  <strong>Tab. 1: </strong> Overview of the latent feature maps included in the different Maximum Mean Discrepancy Loss types
 </p>
 
 The development of the source accuracy, target accuracy, source CE-loss and Maximum Mean Discrepancy Loss throughout the executed model training are visualized in figure 6, 7, 8 and 9. When using the CNN feature maps in the Maximum Mean Discrepancy Loss, higher source and target accuracies were achieved (see figure 6 and 7). The increased classification performance in both domains indicated that the domain discrepancy was reduced more efficiently by the CNN Maximum Mean Discrepancy Loss. Additionally, the losses converged faster and smoother (see figure 8 and 9). This proves the increased training stability when applying the Maximum Mean Discrepancy Loss in the CNN layers. When estimating the Maximum Mean Discrepancy Loss in the fully-connected layers, it seemed like the two training goals of the Maximum Mean Discrepancy Loss and source Cross Entropy loss were contradicting. The model training appeared to be more prone to get stuck in local minima. This was mainly reflected by the training instabilities in the FC Maximum Mean Discrepancy-based model training. The resulting fluctuations are observable in the development of the source and target accuracies (see figure 6 and 7) and in the loss curves (see figure 8 and 9).
@@ -221,22 +217,22 @@ The development of the source accuracy, target accuracy, source CE-loss and Maxi
 
 ## Overall Prognostics and Health Management Performance
 
-In this chapter, different Maximum Mean Discrepancy (MMD) Loss types are evaluated on the real-world BSD dataset. This is done by comparing the performance of models trained with those Maximum Mean Discrepancy Loss types. The performance was measured by the models’ accuracy on the target domain test dataset. The evaluation of the Maximum Mean Discrepancy Loss types types required several stages of experiments. In the first stage, all of the 49 signals, recorded on the miling machine, were evaluated by their suitability for PHM tasks. The models were trained on these signals without applying any Maximum Mean Discrepancy Loss. Based on the performance of the resulting models, seven promising signals were selected for further testing. In the second stage, the models were optimized with different Maximum Mean Discrepancy-based training strategies on those seven signals. The models were optimized with FULL MMD-, FC MMD- and CNN MMD Losses and three different GAMMA choices (0.05, 0.5, 1). In table 2 the FULL MMD-, FC MMD- and CNN MMD-Losses are specified:
+In this chapter, different Maximum Mean Discrepancy (MMD) Loss types are evaluated on the real-world BSD dataset. This is done by comparing the performance of models trained with those Maximum Mean Discrepancy Loss types. The performance was measured by the models’ accuracy on the target domain test dataset. The evaluation of the Maximum Mean Discrepancy Loss types types required several stages of experiments. In the first stage, all of the 49 signals, recorded on the miling machine, were evaluated by their suitability for PHM tasks. The models were trained on these signals without applying any Maximum Mean Discrepancy Loss. Based on the performance of the resulting models, seven promising signals were selected for further testing. In the second stage, the models were optimized with different Maximum Mean Discrepancy-based training strategies on those seven signals. The models were optimized with FULL MMD-, FC MMD- and CNN MMD Losses and three different GAMMA choices (0.05, 0.5, 1). In tab. 2 the FULL MMD-, FC MMD- and CNN MMD-Losses are specified:
 
 <p align="center">
   <img src="ressources/Layer_Choice_REAL.png" width='450'/><br>
-  <strong>Table 2: </strong> Overview of the latent feature maps included in the different Maximum Mean Discrepancy Loss types
+  <strong>Tab. 2: </strong> Overview of the latent feature maps included in the different Maximum Mean Discrepancy Loss types
 </p>
 
 All nine Maximum Mean Discrepancy-based model training (all combinations of MMD-loss types and GAMMAs) and the baseline model training that did not apply any Maximum Mean Discrepancy Loss were repeated five times on all seven signals. During each epoch in the model training, the models were evaluated based on the balanced accuracy on the target domain validation dataset and the best-performing model was stored. The different Maximum Mean Discrepancy Loss types were compared by the performance of those stored models on the unseen target domain test dataset.
-For each training strategy (specific Maximum Mean Discrepancy Loss type and GAMMA choice), the accuracies achieved by the five equally trained models on the target domain test dataset were averaged. The results are shown in table 3. The FULL MMD models performed best on four of the seven signals and the CNN MMD models on the other three. The FC MMD models never outperformed the other MMD-based models. Compared to the baseline model, the MMD-based models increased the accuracy on the target domain test dataset by up to 10.18%. Table 4 shows the standard deviations corresponding to the averaged accuracies seen in table 3. The best-performing models usually showed low to average standard deviations, which verifies a high degree of reproducibility throughout the repeated model training. This demonstrates the relevance of the results and proves the applicability and utility of the corresponding MMD-losses for reducing the domain discrepancy in the PHM task. For all training strategies (BASELINE, FULL MMD, FC MMD, CNN MMD) the calculated standard deviations were averaged in the last column of table 4. For the MMD-based model training, the average standard deviations were calculated over all signals and GAMMAs and for the baseline model training over all signals. From the MMD-based models, the FULL MMD models had the lowest average standard deviation and the FC MMD models had the highest. This proves that the FULL MMD models achieved the most consistent performance throughout repeated training with different GAMMAs and on different signals. Therefore, the FULL MMD-based model training is more robust and less sensitive to GAMMA and signal choices. A reason for the sensitivity of the FC MMD-based model training to the GAMMA and signal choices might be the contradicting training goals when evaluating the MMD- and the source CE-loss solely in the FC layers. In this case, the training might be more prone to getting stuck in local minima, which leads to instabilities during the optimization. Furthermore, the results achieved by the different MMD-loss types strongly depended on the GAMMA choices. In the FULL MMD-based model training on the D:P_mech./X signal, varying GAMMA choices led to accuracy differences of nearly 30%.
+For each training strategy (specific Maximum Mean Discrepancy Loss type and GAMMA choice), the accuracies achieved by the five equally trained models on the target domain test dataset were averaged. The results are shown in tab. 3. The FULL MMD models performed best on four of the seven signals and the CNN MMD models on the other three. The FC MMD models never outperformed the other MMD-based models. Compared to the baseline model, the MMD-based models increased the accuracy on the target domain test dataset by up to 10.18%. Tab. 4 shows the standard deviations corresponding to the averaged accuracies seen in tab. 3. The best-performing models usually showed low to average standard deviations, which verifies a high degree of reproducibility throughout the repeated model training. This demonstrates the relevance of the results and proves the applicability and utility of the corresponding MMD-losses for reducing the domain discrepancy in the PHM task. For all training strategies (BASELINE, FULL MMD, FC MMD, CNN MMD) the calculated standard deviations were averaged in the last column of tab. 4. For the MMD-based model training, the average standard deviations were calculated over all signals and GAMMAs and for the baseline model training over all signals. From the MMD-based models, the FULL MMD models had the lowest average standard deviation and the FC MMD models had the highest. This proves that the FULL MMD models achieved the most consistent performance throughout repeated training with different GAMMAs and on different signals. Therefore, the FULL MMD-based model training is more robust and less sensitive to GAMMA and signal choices. A reason for the sensitivity of the FC MMD-based model training to the GAMMA and signal choices might be the contradicting training goals when evaluating the MMD- and the source CE-loss solely in the FC layers. In this case, the training might be more prone to getting stuck in local minima, which leads to instabilities during the optimization. Furthermore, the results achieved by the different MMD-loss types strongly depended on the GAMMA choices. In the FULL MMD-based model training on the D:P_mech./X signal, varying GAMMA choices led to accuracy differences of nearly 30%.
 
 <p align="center">
   <img src="ressources/Results_AVG.png" rotate='90' width='750'/><br>
-  <strong>Table 3: </strong> Average target test accuracy (%)
+  <strong>Tab. 3: </strong> Average target test accuracy (%)
 </p>
 
 <p align="center">
   <img src="ressources/Results_STD.png" width='750'/><br>
-  <strong>Table 4: </strong> Standard deviation test accuracy (%)
+  <strong>Tab. 4: </strong> Standard deviation test accuracy (%)
 </p>
