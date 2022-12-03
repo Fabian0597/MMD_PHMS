@@ -1,5 +1,7 @@
 .DS_Store
 
+old_bash_files
+
 CODE_REAL_DATA/runs
 CODE_REAL_DATA/__pycache__
 CODE_REAL_DATA/experiments
