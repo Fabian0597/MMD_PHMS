@@ -1,6 +1,8 @@
 # Installation and Usage
 All computations were performed on a Leibniz Supercomputing Centre7 compute node virtual machine with 20 Intel® Xeon® Gold 6148 vCPUs, one Nvidia® Tesla V100, 368 GB RAM, PyTorch v.1.4.0 and CUDA 10.1 in combination with python 3.8.
 
+The folder CODE_DUMMY_DATA contains all CODE which was used with the syntetically generated dummy dataset. The folder CODE_REAL_DATA contains all CODE which was used with the recorded signals from the DMG DMC 55H duoblock milling machine.
+
 ## 1. Install necessary python 3 packages from the file requirements.txt:
 * Go to the folder with the downloaded repository
 * Install necessary packages: ```pip install -r requirements.txt```
