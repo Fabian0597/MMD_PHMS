@@ -1,3 +1,32 @@
+# Installation and Usage
+All computations were performed on a Leibniz Supercomputing Centre7 compute node virtual machine with 20 Intel® Xeon® Gold 6148 vCPUs, one Nvidia® Tesla V100, 368 GB RAM, PyTorch v.1.4.0 and CUDA 10.1 in combination with python 3.8.
+
+## 1. Install necessary python 3 packages from the file requirements.txt:
+* Go to the folder with the downloaded repository
+* Install necessary packages: ```pip install -r requirements.txt```
+
+## 2. Specify Model Training
+Open bash file experiment_model_start.sh to adapt the training:
+* gpu_name
+* num_epochs
+* GAMMAs
+* GAMMA_reduction
+* num_pool
+* MMD_layer_activation_flag_FULL
+* MMD_layer_activation_flag_FC
+* MMD_layer_activation_flag_CNN
+* features_of_interest
+* class_0_labels
+* class_1_labels
+
+## 3. Execute Model Training
+Execute bash file experiment_model_start.sh to start the model training: ```bash experiment_model_start.sh```
+
+## 3. Evaluate Models
+A folder experiments was generated during the model training. The folder contains the data and plots for the learning curves (Accuracy, Cross Entropy Loss and Maximum Mean Discrepancy Loss for the source and target domains) as well as the data distribution in the penulitmate hidden layer FC2 after epoch 0, 20, 40 and 80. Besides that, the best performing model during the training is stored as model_cnn.pt and model_fc.pt. The used hyperparameters are stored in the hyperparameters.txt to make the training more transparent for later evaluation. 
+
+
+
 # Master's Thesis: Intelligent Ball Screw Fault Diagnosis Using Deep Learning Based Domain Adaptation and Transfer Learning
 
 ## Introduction
